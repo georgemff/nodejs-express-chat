@@ -30,7 +30,9 @@ const addMessage = (message, sender) =>
     const meta = {
       id: getUniqueId(),
       chatId: sender + message.target,
+      sender: sender,
       date: getDate(),
+      seenByTarget: false,
     };
     message = { ...meta, ...message };
     messages.push(message);
@@ -56,7 +58,35 @@ const addMessage = (message, sender) =>
     });
   });
 
+const hasUnreadMessages = async (userId) =>
+  new Promise((resolve) => {
+    const unreadMessages = messages
+      .filter((m) => m.target === userId && !m.seenByTarget)
+      .map((m) => ({ seen: m.seenByTarget, sender: m.sender }))
+      .filter(
+        (m, i, self) =>
+          i ===
+          self.findIndex((m1) => m.seen === m1.seen && m.sender === m1.sender)
+      );
+    resolve(unreadMessages);
+  });
+
+const markMessagesAsSeen = async (target, sender) =>
+  new Promise((resolve) => {
+    messages = messages.map((m) => {
+      if (m.target === target && m.sender === sender && !m.seenByTarget) {
+        m.seenByTarget = true;
+        return m;
+      }
+      return m;
+    });
+    writeToDb(filename, messages);
+    resolve()
+  });
+
 module.exports = {
   getMessages,
   addMessage,
+  hasUnreadMessages,
+  markMessagesAsSeen,
 };

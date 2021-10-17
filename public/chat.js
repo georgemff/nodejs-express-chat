@@ -36,11 +36,22 @@ const store = {};
   });
 
   const sendMessageOnClick = () => {
+    if (!_chatParticipants.target) {
+      messageTextbox.innerText = "";
+      messageTextbox.classList.add("incorrect");
+      setTimeout(() => {
+        messageTextbox.classList.remove("incorrect");
+      }, 1000);
+      return;
+    }
     sendMessage({
       target: _chatParticipants.target,
       message: messageTextbox.innerText,
-    }).catch((e) => {
-      console.error(e);
+    }).catch((err) => {
+      if (err.status === 401) {
+        handleAuthError();
+      }
+      console.log(err);
     });
     messageTextbox.innerText = "";
   };
@@ -59,21 +70,43 @@ async function sendMessage(data = {}) {
   return response.json();
 }
 
+async function hasUnreadMessages() {
+  const url = `http://localhost:8080/has-unread-messages`;
+  return fetch(url, { headers: authHeader });
+}
+
 async function getMessages(target) {
   const url = `http://localhost:8080/target/${target}`;
-
-  return await fetch(url, { headers: authHeader });
+  return fetch(url, { headers: authHeader });
 }
 
 async function getUsers(userId) {
   const url = `http://localhost:8080/users/${userId}`;
-
-  return await fetch(url, { headers: authHeader });
+  return fetch(url, { headers: authHeader });
 }
 
+async function markAsSeen(sender) {
+  const url = `http://localhost:8080/mark-messages-as-seen/${sender}`;
+  return fetch(url, { method: "PUT", headers: authHeader });
+}
 function getCurrentUser() {
   store.userId = window.localStorage.getItem("userId");
   store.jwt = window.localStorage.getItem("jwt");
+}
+
+function checkUnreadMessages() {
+  hasUnreadMessages()
+    .then((res) => res.json())
+    .then((rj) => {
+      if (rj && rj.length) {
+        rj.forEach((m) => {
+          addRedCircleToElement(m.sender);
+        });
+      }
+    })
+    .catch((err) => {
+      console.error(err);
+    });
 }
 
 function loadMessages(messages) {
@@ -101,6 +134,7 @@ function loadMessages(messages) {
 
 function showActiveUsers() {
   const activeUsers = document.getElementById("active-users");
+  activeUsers.innerHTML = "";
   const userId = store.userId;
   getUsers(userId)
     .then((r) => r.json())
@@ -110,8 +144,12 @@ function showActiveUsers() {
         activeUsers.appendChild(createUserElement(userId, u.nickname));
         addEventToUserElement(userId);
       });
+      checkUnreadMessages();
     })
     .catch((err) => {
+      if (err.status === 401) {
+        handleAuthError();
+      }
       console.error(err);
     });
 }
@@ -132,6 +170,11 @@ function addEventToUserElement(userId) {
 }
 
 function chooseTarget(_this) {
+  if (_chatParticipants.target) {
+    document
+      .getElementById("id-" + _chatParticipants.target)
+      .classList.remove("active");
+  }
   _chatParticipants = new chatParticipants(_this.id.slice(3));
   _this.classList.add("active");
   const redCircle = document.querySelector(`#${_this.id} > .red-circle`);
@@ -146,7 +189,22 @@ function loadChatMessages() {
     })
     .then((rj) => {
       loadMessages(rj);
+      const lastMessage = rj[rj.length - 1];
+      console.log(lastMessage, store.userId);
+      if (!lastMessage.seenByTarget && lastMessage.target === store.userId) {
+        markMessagesAsSeen();
+      }
+    })
+    .catch((err) => {
+      if (err.status === 401) {
+        handleAuthError();
+      }
     });
+}
+
+function markMessagesAsSeen() {
+  const sender = _chatParticipants.target;
+  markAsSeen(sender).catch((err) => console.error(err));
 }
 
 function openChatConnection() {
@@ -168,11 +226,12 @@ function openChatConnection() {
       const target = m.sender === userId ? m.target : m.sender;
       if (_chatParticipants.target === target) {
         loadMessages(data);
+        const lastMessage = data[data.length - 1];
+        if (!lastMessage.seenByTarget && lastMessage.target === store.userId) {
+          markMessagesAsSeen();
+        }
       } else {
-        const span = document.getElementById(`id-${target}`);
-        const redCircle = document.createElement("span");
-        redCircle.classList.add("red-circle");
-        span.appendChild(redCircle);
+        addRedCircleToElement(target);
       }
       return false;
     } catch (e) {
@@ -199,7 +258,8 @@ function openActiveUsersConnection() {
     setInterval(() => {
       socket.send(JSON.stringify({}));
     }, 120000);
-    showActiveUsers();
+    console.log("open");
+    // showActiveUsers();
   };
 
   socket.onerror = (e) => {
@@ -208,6 +268,7 @@ function openActiveUsersConnection() {
 
   socket.onmessage = () => {
     console.log("There Are Some New Users!^^");
+    console.log("message");
     showActiveUsers();
   };
   addSocketToStore(socket);
@@ -225,4 +286,17 @@ function addEventToWindow() {
 
 function addSocketToStore(socket) {
   store.sockets = [socket, ...(store.sockets || [])];
+}
+
+function handleAuthError() {
+  console.log("handleAuthError");
+  window.localStorage.removeItem("jwt");
+  window.location.reload();
+}
+
+function addRedCircleToElement(target) {
+  const span = document.getElementById(`id-${target}`);
+  const redCircle = document.createElement("span");
+  redCircle.classList.add("red-circle");
+  span.appendChild(redCircle);
 }
