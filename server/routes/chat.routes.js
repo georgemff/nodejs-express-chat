@@ -14,6 +14,28 @@ router.get("/target/:target/", auth, async (req, res) => {
     });
 });
 
+router.get("/has-unread-messages/", auth, async (req, res) => {
+  await chat
+    .hasUnreadMessages(req.user.id)
+    .then((unreadMessages) => res.json(unreadMessages))
+    .catch((err) => {
+      res.status(400).json({
+        message: err.message,
+      });
+    });
+});
+
+router.put("/mark-messages-as-seen/:sender", auth, async (req, res) => {
+  await chat
+    .markMessagesAsSeen(req.user.id, req.params.sender)
+    .then(() => res.sendStatus(200))
+    .catch((err) => {
+      res.status(400).json({
+        message: err.message,
+      });
+    });
+});
+
 router.post("/send-message", auth, async (req, res) => {
   await chat
     .addMessage(req.body, req.user.id)

@@ -52,11 +52,17 @@
   text-align: left;
 }
 
+#active-users > div {
+  margin-bottom: 10px;
+}
+
 #active-users > div > span.active {
   background-color: green;
   color: #fff;
 }
-
+.incorrect {
+  border: 1px solid red;
+}
 .container {
   width: 100%;
   max-width: 500px;

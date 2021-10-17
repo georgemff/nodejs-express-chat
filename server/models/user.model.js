@@ -86,7 +86,7 @@ const getUsersList = (userId) =>
     let activeUsers = [];
     for (let i = 0; i < activeConnections.length; i++) {
       let { id, nickname } = users.filter(
-        (u) => u.id === activeConnections[i]
+        (u) => u.id && u.id === activeConnections[i]
       )[0];
       activeUsers.push({ id, nickname });
     }

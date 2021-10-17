@@ -7,6 +7,7 @@ const {
   removeChatConnection,
   addUsersConnection,
   removeUsersConnection,
+  getUsersConnection,
 } = require("./helpers/helpers");
 ws(app);
 app.use(cors());
@@ -30,13 +31,24 @@ app.ws("/get-new-message", (ws, req) => {
 
 app.ws("/get-active-users", (ws, req) => {
   ws.on("message", (msg) => {
-    console.log("Connected To Active Users", JSON.parse(msg).id);
-    addUsersConnection({ id: JSON.parse(msg).id, ws });
+    const id = JSON.parse(msg).id;
+    console.log("Connected To Active Users", id);
+    if (id) {
+      addUsersConnection({ id, ws });
+    }
+    const usersConnections = getUsersConnection();
+    usersConnections.forEach((u) => {
+      u.ws.send();
+    });
   });
 
   ws.on("close", (code, id) => {
     removeUsersConnection(id);
-
+    const usersConnections = getUsersConnection();
+    console.log(usersConnections);
+    usersConnections.forEach((u) => {
+      u.ws.send();
+    });
     console.log("Connection Close! {Active Users}");
   });
 });
