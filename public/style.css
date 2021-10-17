@@ -1,0 +1,174 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+.main {
+  display: flex;
+  flex-direction: row-reverse;
+  justify-content: center;
+  width: 100%;
+  height: 100vh;
+  padding-top: 10vh;
+}
+
+#main {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+}
+
+#main > div:not(.next, .submit) {
+  padding: 50px 50px 0;
+}
+
+.next > input {
+  cursor: pointer;
+}
+
+#main input {
+  width: 200px;
+  height: 36px;
+  border: 1px solid rgba(0, 0, 0, 0.5);
+  padding: 5px 10px;
+}
+
+.users {
+  padding: 0 20px;
+}
+
+#active-users > div > span {
+  display: inline-block;
+  position: relative;
+  text-align: left;
+  width: 100%;
+  cursor: pointer;
+  padding: 5px 15px;
+  border: 1px solid rgba(0, 0, 0, 0.3);
+  border-radius: 10px;
+  text-align: left;
+}
+
+#active-users > div > span.active {
+  background-color: green;
+  color: #fff;
+}
+
+.container {
+  width: 100%;
+  max-width: 500px;
+  height: 100vh;
+  min-height: 600px;
+  max-height: 600px;
+  border: 1px solid rgba(0, 0, 0, 0.3);
+}
+
+.container > div {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+}
+
+.chat {
+  width: 100%;
+  height: 90%;
+}
+
+.chat > #chat-body {
+  width: 100%;
+  height: 100%;
+  overflow-y: auto;
+}
+span.each-message {
+  background-color: grey;
+  margin: 5px;
+  border-radius: 14px;
+  color: #fff;
+}
+span.each-message.sender {
+  text-align: right;
+  padding: 10px 15px;
+  width: auto;
+  display: block;
+  clear: both;
+  float: right;
+}
+span.each-message.reciever {
+  text-align: left;
+  padding: 10px 15px;
+  width: auto;
+  display: block;
+  float: left;
+  clear: both;
+}
+
+span.red-circle {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  border-radius: 100%;
+  background: red;
+  top: -5px;
+  right: -1px;
+}
+
+.new-message {
+  width: 100%;
+  height: 10%;
+  display: flex;
+  flex-direction: row;
+  position: relative;
+  border-top: 1px solid rgba(0, 0, 0, 0.3);
+}
+
+.message-input {
+  width: 100%;
+}
+
+.message-input > .message-textbox {
+  width: 92%;
+  height: 100%;
+}
+
+.send-message-btn {
+  display: table;
+  height: 100%;
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.send-btn {
+  width: 30px;
+  height: 100%;
+  text-align: center;
+  display: table-cell;
+  vertical-align: middle;
+}
+
+.each-message {
+  display: block;
+  width: 100%;
+  padding: 10px 5px;
+}
+@media screen and (max-width: 500px) {
+  .main {
+    padding: 0;
+  }
+
+  .container {
+    width: 100%;
+    height: 100vh;
+    border: none;
+    max-height: none;
+  }
+
+  .message-input > .message-textbox {
+    width: 88%;
+  }
+}
