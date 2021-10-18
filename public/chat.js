@@ -100,7 +100,7 @@ function checkUnreadMessages() {
     .then((rj) => {
       if (rj && rj.length) {
         rj.forEach((m) => {
-          addRedCircleToElement(m.sender);
+          if (m.sender) addRedCircleToElement(m.sender);
         });
       }
     })
@@ -190,7 +190,6 @@ function loadChatMessages() {
     .then((rj) => {
       loadMessages(rj);
       const lastMessage = rj[rj.length - 1];
-      console.log(lastMessage, store.userId);
       if (!lastMessage.seenByTarget && lastMessage.target === store.userId) {
         markMessagesAsSeen();
       }
@@ -296,6 +295,9 @@ function handleAuthError() {
 
 function addRedCircleToElement(target) {
   const span = document.getElementById(`id-${target}`);
+  if(!span) {
+    return;
+  }
   const redCircle = document.createElement("span");
   redCircle.classList.add("red-circle");
   span.appendChild(redCircle);

@@ -31,14 +31,13 @@ const createUserOrLogin = (data) =>
       const user = { ...id, ...data };
       users.push(user);
       writeToDb(filename, users);
-      console.log(process.env.TOKEN_KEY);
       const jwtToken = jwt.sign({ id }, process.env.TOKEN_KEY);
       resolve({
         status: 200,
         message: "User Created",
         user: {
-          id: existingUser.user.id,
-          nickname: existingUser.user.nickname,
+          id: id,
+          nickname: data.nickname,
           jwt: jwtToken,
         },
       });
@@ -85,10 +84,9 @@ const getUsersList = (userId) =>
       .filter((id) => id !== userId);
     let activeUsers = [];
     for (let i = 0; i < activeConnections.length; i++) {
-      let { id, nickname } = users.filter(
-        (u) => u.id && u.id === activeConnections[i]
-      )[0];
-      activeUsers.push({ id, nickname });
+      let activeUser = users.filter(u => u.id === activeConnections[i])[0];
+      if (activeUser && activeUser.id && activeUser.nickname)
+        activeUsers.push({ id: activeUser.id, nickname: activeUser.nickname });
     }
     resolve({
       users: activeUsers,

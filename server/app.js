@@ -45,7 +45,6 @@ app.ws("/get-active-users", (ws, req) => {
   ws.on("close", (code, id) => {
     removeUsersConnection(id);
     const usersConnections = getUsersConnection();
-    console.log(usersConnections);
     usersConnections.forEach((u) => {
       u.ws.send();
     });
