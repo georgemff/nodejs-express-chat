@@ -3,54 +3,56 @@ const ws = require("express-ws");
 const app = express();
 const cors = require("cors");
 const {
-  addChatConnection,
-  removeChatConnection,
-  addUsersConnection,
-  removeUsersConnection,
-  getUsersConnection,
+    addChatConnection,
+    removeChatConnection,
+    addUsersConnection,
+    removeUsersConnection,
+    getUsersConnection,
 } = require("./helpers/helpers");
 ws(app);
 app.use(cors());
 app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.urlencoded({extended: true}));
 app.use(require("./routes/chat.routes"));
 app.use(require("./routes/user.routes"));
 
-app.ws("/get-new-message", (ws, req) => {
-  ws.on("message", (msg) => {
-    if (JSON.parse(msg).id) {
-      addChatConnection({ id: JSON.parse(msg).id, ws });
-    }
-  });
+app.ws("/get-new-message", (ws) => {
+    ws.on("message", (msg) => {
+        console.log('Connected To Chat')
+        if (JSON.parse(msg).id) {
+            addChatConnection({id: JSON.parse(msg).id, ws});
+        }
+    });
 
-  ws.on("close", (code, id) => {
-    removeChatConnection(id);
-    console.log("Connection Close!", code, id);
-  });
+    ws.on("close", (code, id) => {
+        removeChatConnection(id);
+        console.log("Connection Close!", code, id);
+    });
 });
 
-app.ws("/get-active-users", (ws, req) => {
-  ws.on("message", (msg) => {
-    const id = JSON.parse(msg).id;
-    console.log("Connected To Active Users", id);
-    if (id) {
-      addUsersConnection({ id, ws });
-    }
-    const usersConnections = getUsersConnection();
-    usersConnections.forEach((u) => {
-      u.ws.send();
+app.ws("/get-active-users", (ws) => {
+    ws.on("message", (msg) => {
+        const id = JSON.parse(msg).id;
+        console.log("Connected To Active Users", id);
+        if (id) {
+            addUsersConnection({id, ws});
+        }
+        const usersConnections = getUsersConnection();
+        usersConnections.forEach((u) => {
+            u.ws.send();
+        });
     });
-  });
 
-  ws.on("close", (code, id) => {
-    removeUsersConnection(id);
-    const usersConnections = getUsersConnection();
-    console.log(usersConnections);
-    usersConnections.forEach((u) => {
-      u.ws.send();
+    ws.on("close", (code, id) => {
+        console.log('remove user connection with id: ', code, id)
+
+        removeUsersConnection(id);
+        const usersConnections = getUsersConnection();
+        usersConnections.forEach((u) => {
+            u.ws.send();
+        });
+        console.log("Connection Close! {Active Users}");
     });
-    console.log("Connection Close! {Active Users}");
-  });
 });
 
 app.listen("8080");

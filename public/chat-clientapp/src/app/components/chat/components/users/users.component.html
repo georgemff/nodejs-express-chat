@@ -1,0 +1,12 @@
+<div class="users">
+  <div class="list">
+    <div class="user-item" *ngFor="let user of users" (click)="chooseTarget.emit(user.id)" [ngClass]="{'active': user.active, 'inactive': !user.active}">
+      <div class="avatar">
+        <span class="first-letter">{{user.nickname.charAt(0).toUpperCase()}}</span>
+      </div>
+      <div class="nickname">
+        <span>{{user.nickname.charAt(0).toUpperCase() + user.nickname.slice(1)}}</span>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,22 @@
+main {
+  width: 100%;
+  max-width: 1186px;
+  margin: 0 auto;
+
+  section {
+    width: 100%;
+    padding-top: 10vh;
+    form {
+      max-width: 500px;
+      margin: 0 auto;
+      .form-body {
+        display: flex;
+        flex-direction: column;
+      }
+    }
+  }
+}
+
+.white-text {
+  color: #FFFFFF!important;
+}

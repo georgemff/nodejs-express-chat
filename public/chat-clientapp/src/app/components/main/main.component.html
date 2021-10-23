@@ -1,0 +1,22 @@
+<main>
+  <section>
+    <form [formGroup]="formGroup" (ngSubmit)="loginRegister()">
+      <div class="form-body">
+        <mat-form-field appearance="outline">
+          <mat-label>NickName</mat-label>
+          <input matInput placeholder="NickName" class="white-text" formControlName="nickname">
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Enter your password</mat-label>
+          <input matInput [type]="hide ? 'password' : 'text'" class="white-text" formControlName="password">
+          <button mat-icon-button matSuffix (click)="hide = !hide" [attr.aria-label]="'Hide password'"
+                  [attr.aria-pressed]="hide">
+            <mat-icon>{{hide ? 'visibility_off' : 'visibility'}}</mat-icon>
+          </button>
+        </mat-form-field>
+        <button mat-stroked-button color="primary" type="submit" [disabled]="formGroup.invalid">Log In / Register</button>
+      </div>
+    </form>
+  </section>
+</main>

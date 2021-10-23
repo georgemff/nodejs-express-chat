@@ -1,0 +1,75 @@
+.users {
+  width: 100%;
+
+  .list {
+    display: flex;
+    flex-direction: row;
+
+    .user-item {
+      width: 100%;
+      display: flex;
+      color: #FFFFFF;
+      height: 38px;
+      border-radius: 4px;
+      cursor: pointer;
+      position: relative;
+
+      &.active {
+        &:before {
+          content: "";
+          width: 10px;
+          height: 10px;
+          position: absolute;
+          top: 50%;
+          right: 20px;
+          transform: translateY(-50%);
+          background-color: green;
+          border-radius: 100%;
+        }
+      }
+
+      &.inactive {
+        &:before {
+          content: "";
+          width: 10px;
+          height: 10px;
+          position: absolute;
+          top: 50%;
+          right: 20px;
+          transform: translateY(-50%);
+          background-color: grey;
+          border-radius: 100%;
+        }
+      }
+
+      .avatar {
+        width: 20%;
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        &:before {
+          content: '';
+          display: block;
+          position: absolute;
+          width: 30px;
+          height: 30px;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          border-radius: 100%;
+          background-color: red;
+          z-index: -1;
+        }
+      }
+
+      .nickname {
+        width: 80%;
+        display: flex;
+        align-items: center;
+        padding-left: 5px;
+      }
+    }
+  }
+}
