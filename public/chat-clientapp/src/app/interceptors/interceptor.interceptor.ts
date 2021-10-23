@@ -12,6 +12,7 @@ export class InterceptorInterceptor implements HttpInterceptor {
   intercept(httpRequest: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
     let jwtToken = window.localStorage.getItem("jwt") || '';
     return next.handle(httpRequest.clone({setHeaders: {
+        "Content-Type": "application/json",
         "x-access-token": jwtToken,
       }}))
       .pipe(catchError(err => {

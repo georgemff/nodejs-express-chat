@@ -1,6 +1,6 @@
 import {Injectable} from "@angular/core";
 import {HttpClient} from "@angular/common/http";
-import {AuthAPIResponse, Message, User, UserAuth} from "../interfaces/interfaces";
+import {AuthAPIResponse, Message, NewMessage, User, UserAuth} from "../interfaces/interfaces";
 import {Observable} from "rxjs";
 
 @Injectable({
@@ -21,6 +21,11 @@ export class ApiService {
   public hasUnreadMessages() {
     const url = this.baseUrl + "has-unread-messages";
     return this.httpClient.get(url);
+  }
+
+  public sendMessage(body: NewMessage): Observable<any> {
+    const url = this.baseUrl + "send-message"
+    return this.httpClient.post(url, body)
   }
 
   public getMessages(target: string): Observable<Message[]> {

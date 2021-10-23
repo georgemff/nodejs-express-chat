@@ -3,17 +3,19 @@
     <app-users (chooseTarget)="chooseTarget($event)" [users]="users"></app-users>
   </div>
   <div class="chat">
-    <div class="chat-body">
-      <div *ngFor="let m of targetMessages" [ngClass]="{'left': m.target === _chartParticipants.sender, 'right': !(m.target === _chartParticipants.sender)}">
+    <div class="chat-body" #chatBody>
+      <div *ngFor="let m of targetMessages" [ngClass]="{'right': m.sender === _chatParticipants.sender, 'left': _chatParticipants.sender === m.target}">
         <span>{{m.message}}</span>
       </div>
     </div>
     <div class="message-body">
       <div class="message-input">
-        <div class="input" contenteditable="true"></div>
+        <div class="input" contenteditable="true" #input></div>
       </div>
       <div class="message-send">
-        <button mat-button><mat-icon>send</mat-icon></button>
+        <button mat-button
+        (click)="sendMessage(input)"
+        ><mat-icon>send</mat-icon></button>
       </div>
     </div>
   </div>

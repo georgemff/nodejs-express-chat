@@ -29,6 +29,22 @@
   .chat-body {
     width: 100%;
     height: calc(100% - 38px);
+    overflow-y: auto;
+    padding: 0 4px;
+    &::-webkit-scrollbar {
+      width: 5px;
+    }
+
+    &::-webkit-scrollbar-track {
+      box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
+      border-radius: 4px;
+    }
+
+    &::-webkit-scrollbar-thumb {
+      background-color: grey;
+      border-radius: 4px;
+      width: 4px;
+    }
   }
 
   .message-body {
@@ -75,19 +91,16 @@
   max-width: 60%;
   margin-bottom: 10px;
   border-radius: 10px;
-  color: #FFFFFF
+  color: #FFFFFF;
+  clear: both;
 }
 
 .left {
-
   background-color: red;
   float: left;
-  clear: right;
 }
 
 .right {
-  padding: 5px 10px;
-  max-width: 60%;
   background-color: blue;
   float: right;
 }

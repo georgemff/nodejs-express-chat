@@ -27,3 +27,8 @@ export interface Message {
   sender: string
   target: string
 }
+
+export interface NewMessage {
+  target: string;
+  message: string;
+}
