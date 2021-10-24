@@ -1,21 +1,39 @@
-<div class="container">
-  <div class="users">
-    <app-users (chooseTarget)="chooseTarget($event)" [users]="users"></app-users>
-  </div>
-  <div class="chat">
-    <div class="chat-body" #chatBody>
-      <div *ngFor="let m of targetMessages" [ngClass]="{'right': m.sender === _chatParticipants.sender, 'left': _chatParticipants.sender === m.target}">
-        <span>{{m.message}}</span>
-      </div>
+<div class="wrapper">
+  <div class="header">
+    <div class="menu" *ngIf="lessThan600">
+      <button mat-button (click)="toggle()">
+        <mat-icon>menu</mat-icon>
+      </button>
     </div>
-    <div class="message-body">
-      <div class="message-input">
-        <div class="input" contenteditable="true" #input></div>
+    <div class="log-out">
+      <button mat-button
+              (click)="logOut()"
+      ><mat-icon>logout</mat-icon></button>
+    </div>
+  </div>
+  <div class="container" [ngClass]="{'relative': show}">
+    <div class="overlay" *ngIf="show" (click)="show = false"></div>
+    <div class="users" [ngClass]="{'show': show}">
+      <app-users (chooseTarget)="chooseTarget($event)" [users]="users"></app-users>
+    </div>
+    <div class="chat">
+      <div class="chat-body" #chatBody>
+        <div *ngIf="!_chatParticipants.target" class="blank-chat">
+          connect <br> with <br> people
+        </div>
+        <div *ngFor="let m of targetMessages" [ngClass]="{'right': m.sender === _chatParticipants.sender, 'left': _chatParticipants.sender === m.target}">
+          <span>{{m.message}}</span>
+        </div>
       </div>
-      <div class="message-send">
-        <button mat-button
-        (click)="sendMessage(input)"
-        ><mat-icon>send</mat-icon></button>
+      <div class="message-body" *ngIf="_chatParticipants.target">
+        <div class="message-input">
+          <div class="input" contenteditable="true" #input (keypress)="enter($event, input)"></div>
+        </div>
+        <div class="message-send">
+          <button mat-button
+                  (click)="sendMessage(input)"
+          ><mat-icon>send</mat-icon></button>
+        </div>
       </div>
     </div>
   </div>

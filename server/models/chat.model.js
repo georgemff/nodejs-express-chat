@@ -45,12 +45,13 @@ const addMessage = (message, sender) =>
         connections.forEach((c) =>
             c.ws.send(
                 JSON.stringify(
-                    messages.filter((m) => {
-                        return (
-                            m.chatId === sender + message.target ||
-                            m.chatId === message.target + sender
-                        );
-                    })
+                    {...meta, ...message}
+                    // messages.filter((m) => {
+                    //     return (
+                    //         m.chatId === sender + message.target ||
+                    //         m.chatId === message.target + sender
+                    //     );
+                    // })
                 )
             )
         );

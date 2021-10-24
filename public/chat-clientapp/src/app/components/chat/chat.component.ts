@@ -1,7 +1,7 @@
-import {Component, HostListener, ViewChild} from "@angular/core";
+import {AfterViewInit, Component, ElementRef, HostListener, ViewChild, ViewChildren} from "@angular/core";
 import {StoreService} from "../../services/store.service";
 import {webSocket, WebSocketSubject} from "rxjs/webSocket"
-import {ActivatedRoute} from "@angular/router";
+import {ActivatedRoute, Router} from "@angular/router";
 import {ApiService} from "../../services/api.service";
 import {Message, NewMessage} from "../../interfaces/interfaces";
 import {WebsocketService} from "./services/websocket.service";
@@ -20,7 +20,12 @@ export class ChatComponent {
     this.closeConnection();
   }
 
-  @ViewChild("chatBody") chatBody: HTMLElement;
+  @HostListener('window:resize', ['$event'])
+  onResize(event: HTMLElement) {
+    // console.log(window.matchMedia('(max-width: 600px)'))
+  }
+
+  @ViewChild("chatBody") chatBody: ElementRef;
 
   public _chatParticipants: {
     target: string;
@@ -36,40 +41,73 @@ export class ChatComponent {
 
   public newMessage: string = "";
 
+  lessThan600: boolean;
+  show = false;
+
   constructor(
     private store: StoreService,
     private activatedRoute: ActivatedRoute,
     private apiService: ApiService,
-    private websocketService: WebsocketService) {
+    private websocketService: WebsocketService,
+    private router: Router) {
     this.activatedRoute.data
       .subscribe(r => {
-        console.log(r)
         this.store.user = r.user;
         this._chatParticipants = {
           target: '',
           sender: this.store?.user?.id
         }
-        console.log('sb', this._chatParticipants)
       })
     this.webSocketInit();
     this.loadMessageTargets();
+    this.onMediaChange();
   }
 
-  public getClassName(message: Message): boolean {
-    return message.sender === this._chatParticipants.sender;
+  private onMediaChange() {
+    const media = window.matchMedia('(max-width: 600px)')
+    this.lessThan600 = media.matches;
+    media.onchange = (e) => {
+      this.lessThan600 = e.matches
+    }
+  }
+
+  enter(event: KeyboardEvent, input: HTMLElement) {
+    console.log(event)
+    if (event.key === "Enter" && !event.shiftKey) {
+      event.preventDefault();
+      this.sendMessage(input)
+      return false;
+    }
+    return true
+  }
+
+  toggle(): void {
+    this.show = !this.show;
+  }
+
+  logOut(): void {
+    window.localStorage.removeItem('jwt');
+    this.router.navigate(['main'])
   }
 
 
   public chooseTarget(userId: string): void {
+    if (this._chatParticipants.target) {
+      if (this._chatParticipants.target === userId) {
+        this.targetMessages = [];
+        this._chatParticipants.target = "";
+        return;
+      }
+    }
     this._chatParticipants.target = userId;
-    console.log(this._chatParticipants)
     this.apiService.getMessages(userId)
       .subscribe(r => {
-        console.log(r)
         this.targetMessages = r;
-        this.chatBody.scrollTop = this.chatBody.scrollHeight
-        const lastMessage = r[r.length - 1];
-        if (!lastMessage.seenByTarget && lastMessage.target === this.store.user.id) {
+        setTimeout(() => {
+          this.chatBody.nativeElement.scrollTop = this.chatBody.nativeElement.scrollHeight
+        }, 0)
+        const lastMessage = r[r.length - 1] || null;
+        if (!lastMessage?.seenByTarget && lastMessage?.target === this.store.user.id) {
           this.markMessagesAsSeen();
         }
       }, error => {
@@ -84,7 +122,7 @@ export class ChatComponent {
     }
 
     if (!body.message || !body.target) return;
-    console.log(false)
+
     this.apiService.sendMessage(body)
       .pipe(catchError(err => {
         console.error(err);
@@ -116,7 +154,6 @@ export class ChatComponent {
   private loadMessageTargets() {
     this.apiService.getTargets()
       .subscribe(r => {
-        console.log(r)
         this.users = r;
       }, error => {
         console.error(error)
@@ -151,12 +188,22 @@ export class ChatComponent {
   private openChatConnection() {
     this.wsChatSocket = this.websocketService.openChatConnection();
     this.wsChatSocket.subscribe(r => {
-      this.targetMessages = JSON.parse(r.data);
-      this.chatBody.scrollTop = this.chatBody.scrollHeight
+      const target = r.sender === this._chatParticipants.sender ? r.target : r.sender;
+      if (this._chatParticipants.target) {
+        this.targetMessages.push(JSON.parse(r.data));
+        setTimeout(() => {
+          this.chatBody.nativeElement.scrollTop = this.chatBody.nativeElement.scrollHeight
+        }, 0);
+        if (!r.seenByTarget && r.target === this.store.user.id) {
+          // markMessagesAsSeen();
+        }
+      } else {
+        // addRedCircleToElement(target);
+      }
 
 
     }, error => {
-      console.log(error)
+      console.error(error)
     })
     this.wsChatSocket.next({id: this.store.user.id})
     this.sockets.push(this.wsChatSocket)
@@ -166,10 +213,9 @@ export class ChatComponent {
   private openActiveUsersConnection() {
     this.wsUsersSocket = this.websocketService.openActiveUsersConnection();
     this.wsUsersSocket.subscribe(r => {
-      console.log("Users", r)
       this.getUsers()
     }, error => {
-      console.log(error)
+      console.error(error)
     })
     this.wsUsersSocket.next({id: this.store.user.id})
     this.sockets.push(this.wsUsersSocket)

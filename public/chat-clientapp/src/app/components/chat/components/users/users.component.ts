@@ -1,5 +1,14 @@
-import {Component, EventEmitter, Input, Output} from "@angular/core";
-
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  EventEmitter,
+  Input,
+  OnChanges,
+  Output,
+  SimpleChanges
+} from "@angular/core";
+type UserT = Array<{ id: string; nickname: string, active?: boolean}>
 @Component({
   selector: 'app-users',
   templateUrl: './users.component.html',
@@ -8,6 +17,10 @@ import {Component, EventEmitter, Input, Output} from "@angular/core";
 
 export class UsersComponent {
 
-  @Input() users: Array<{ id: string; nickname: string, active?: boolean}>;
+  @Input() users: UserT;
   @Output() chooseTarget: EventEmitter<string> = new EventEmitter<string>();
+
+  constructor() {
+  }
+
 }
