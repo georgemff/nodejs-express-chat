@@ -36,8 +36,8 @@ const createUserOrLogin = (data) =>
                 status: 200,
                 message: "User Created",
                 user: {
-                    id: existingUser.user.id,
-                    nickname: existingUser.user.nickname,
+                    id: id,
+                    nickname: data.nickname,
                     jwt: jwtToken,
                 },
             });
