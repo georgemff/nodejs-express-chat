@@ -325,6 +325,9 @@ function handleAuthError() {
 
 function addRedCircleToElement(target) {
     const span = document.getElementById(`id-${target}`);
+    if(!span) {
+      return;
+    }
     const redCircle = document.createElement("span");
     redCircle.classList.add("red-circle");
     span.appendChild(redCircle);
