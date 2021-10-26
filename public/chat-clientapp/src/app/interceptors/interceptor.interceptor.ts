@@ -16,7 +16,7 @@ export class InterceptorInterceptor implements HttpInterceptor {
         "x-access-token": jwtToken,
       }}))
       .pipe(catchError(err => {
-        console.error(err)
+        console.log(err)
         if(err.status === 401) {
           this.router.navigate(['main']);
         }

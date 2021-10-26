@@ -9,12 +9,17 @@ const {
     removeUsersConnection,
     getUsersConnection,
 } = require("./helpers/helpers");
+const {connectToTb} = require("./db/mongodb");
 ws(app);
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({extended: true}));
+
+connectToTb()
+
 app.use(require("./routes/chat.routes"));
 app.use(require("./routes/user.routes"));
+
 
 app.ws("/get-new-message", (ws) => {
     ws.on("message", (msg) => {

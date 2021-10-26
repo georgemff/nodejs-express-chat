@@ -5,6 +5,7 @@ const user = require("../models/user.model");
 const auth = require("../middleware/auth");
 const {getUserById} = require("../models/user.model");
 
+
 router.post("/login-or-register", async (req, res) => {
     await user
         .createUserOrLogin(req.body)

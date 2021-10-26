@@ -11,7 +11,6 @@ export class UserResolver implements Resolve<any> {
   constructor(private apiService: ApiService) {
   }
   resolve(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): Observable<User> {
-    console.log('Resolver')
     return this.apiService.getUserInfo()
       .pipe(catchError(err => {
         console.error(err)

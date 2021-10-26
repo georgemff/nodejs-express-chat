@@ -2,13 +2,9 @@ const bcrypt = require("bcrypt");
 const dotenv = require("dotenv");
 dotenv.config();
 const jwt = require("jsonwebtoken");
-const path = require("path");
-const root = path.dirname(require.main.filename);
-const filename = root + "/db/users.json";
-let users = require(filename);
+const {getUsersDb} = require("../db/mongodb")
 
 const {
-    writeToDb,
     getUniqueId,
     getUsersConnection,
 } = require("../helpers/helpers");
@@ -24,48 +20,66 @@ const createUserOrLogin = (data) =>
         }
         const existingUser = await getUser(data); //{status: number, message: string, user?: user}
         if (existingUser.status === -1) {
+            const db = getUsersDb();
             const id = {id: getUniqueId()};
             const salt = await bcrypt.genSalt(10);
             data.password = await bcrypt.hash(data.password, salt);
             const user = {...id, ...data};
-            users.push(user);
-            writeToDb(filename, users);
-            console.log(process.env.TOKEN_KEY);
-            const jwtToken = jwt.sign({id}, process.env.TOKEN_KEY);
-            resolve({
-                status: 200,
-                message: "User Created",
-                user: {
-                    id: id,
-                    nickname: data.nickname,
-                    jwt: jwtToken,
-                },
-            });
-        }
-        if (existingUser.status === 0) {
+            db.insertOne(user, (err, res) => {
+                if(err) {
+                    reject({
+                        status: 500,
+                        message: "Something went wrong!"
+                    })
+                } else {
+                    const jwtToken = jwt.sign({id: id.id}, process.env.TOKEN_KEY);
+                    resolve({
+                        status: 200,
+                        message: "User Created",
+                        user: {
+                            id: id,
+                            nickname: data.nickname,
+                            jwt: jwtToken,
+                        },
+                    });
+                }
+            })
+
+        } else if (existingUser.status === 0) {
             reject({
                 status: 400,
                 message: existingUser.message,
             });
+        } else if (existingUser.status === 1) {
+            const jwtToken = jwt.sign(
+                {id: existingUser.user.id},
+                process.env.TOKEN_KEY
+            );
+            resolve({
+                status: 200,
+                message: existingUser.message,
+                user: {
+                    id: existingUser.user.id,
+                    nickname: existingUser.user.nickname,
+                    jwt: jwtToken,
+                },
+            });
+        } else {
+            reject({
+                status: 500,
+                message: "Oops, Something Went Wrong!"
+            })
         }
 
-        const jwtToken = jwt.sign(
-            {id: existingUser.user.id},
-            process.env.TOKEN_KEY
-        );
-        resolve({
-            status: 200,
-            message: existingUser.message,
-            user: {
-                id: existingUser.user.id,
-                nickname: existingUser.user.nickname,
-                jwt: jwtToken,
-            },
-        });
+
     });
 
 const getUser = async (data) => {
-    const user = users.filter((u) => u.nickname === data.nickname)[0];
+    const db = getUsersDb();
+
+    const [user] = await db.find({
+        nickname: data.nickname
+    }).toArray()
     if (!user) return {status: -1, message: "User Not Found"};
     const isValid = await bcrypt.compare(data.password, user.password);
     if (!isValid) return {status: 0, message: "Incorrect Password"};
@@ -74,10 +88,13 @@ const getUser = async (data) => {
         user,
         message: "Success",
     };
+
 };
 
 const getUsersList = (userId) =>
-    new Promise((resolve) => {
+    new Promise(async (resolve) => {
+        const db = getUsersDb();
+        const users = await db.find({}).toArray();
         let activeConnections = getUsersConnection() || [];
         activeConnections = activeConnections
             .map((c) => c.id)
@@ -94,18 +111,28 @@ const getUsersList = (userId) =>
         });
     });
 
-const getUserById = (userId) =>
-    new Promise(((resolve, reject) => {
-        const user = users.filter(u => u.id === userId)
-            .map(u => ({id: u.id, nickname: u.nickname}))[0]
-        if (user) {
-            resolve(user)
+const getUserById = (userId) => {
+    return new Promise((async (resolve, reject) => {
+        try {
+            const db = getUsersDb();
+            const [user] = await db.find({
+                id: userId
+            }).toArray();
+            if (user) {
+                resolve(user)
+            }
+            reject({
+                status: 400,
+                message: "User Not Exists!"
+            })
+        }catch (e) {
+            reject({
+                status: 500,
+                message: "Something Went Wrong!"
+            })
         }
-        reject({
-            status: 400,
-            message: "User Not Exists!"
-        })
     }))
+}
 
 module.exports = {
     createUserOrLogin,

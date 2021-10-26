@@ -1,9 +1,10 @@
-const path = require("path");
-const root = path.dirname(require.main.filename);
-const messagesDbAddress = root + "/db/messages.json";
-const usersDbAddress = root + "/db/users.json";
-let messages = require(messagesDbAddress);
-const users = require(usersDbAddress);
+// const path = require("path");
+// const root = path.dirname(require.main.filename);
+// const messagesDbAddress = root + "/db/messages.json";
+// const usersDbAddress = root + "/db/users.json";
+// let messages = require(messagesDbAddress);
+// const users = require(usersDbAddress);
+const {getUsersDb, getMessagesDb} = require("../db/mongodb")
 
 const {
     writeToDb,
@@ -13,22 +14,28 @@ const {
 } = require("../helpers/helpers");
 
 const getMessages = (target, sender) =>
-    new Promise((resolve, reject) => {
-        if (Array.isArray(messages)) {
-            resolve(
-                messages.filter(
-                    (m) => m.chatId === sender + target || m.chatId === target + sender
-                )
-            );
-        }
+    new Promise(async (resolve, reject) => {
+        const db = getMessagesDb();
+        const messages = await db.find({
+            "$or": [
+                {chatId: sender + target},
+                {chatId: target + sender}
+            ]
+        }).toArray();
+        // if (Array.isArray(messages)) {
+        resolve(
+            messages
+        );
+        // }
         reject({
-            message: "Somesing Went Wrong!",
+            message: "Something Went Wrong!",
             status: 500,
         });
     });
 
 const addMessage = (message, sender) =>
-    new Promise((resolve) => {
+    new Promise(async (resolve, reject) => {
+        const db = getMessagesDb();
         const meta = {
             id: getUniqueId(),
             chatId: sender + message.target,
@@ -37,8 +44,9 @@ const addMessage = (message, sender) =>
             seenByTarget: false,
         };
         message = {...meta, ...message};
-        messages.push(message);
-        writeToDb(messagesDbAddress, messages);
+        await db.insertOne(message).catch(e => reject(e))
+        // messages.push(message);
+        // writeToDb(messagesDbAddress, messages);
         const connections = getChatConnection().filter(
             (c) => c.id === message.target || c.id === sender
         );
@@ -62,9 +70,14 @@ const addMessage = (message, sender) =>
     });
 
 const hasUnreadMessages = async (userId) =>
-    new Promise((resolve) => {
+    new Promise(async (resolve) => {
+        const db = getMessagesDb()
+        const messages = await db.find({
+            target: userId,
+            seenByTarget: false
+        }).toArray();
+
         const unreadMessages = messages
-            .filter((m) => m.target === userId && !m.seenByTarget)
             .map((m) => ({seen: m.seenByTarget, sender: m.sender}))
             .filter(
                 (m, i, self) =>
@@ -75,30 +88,51 @@ const hasUnreadMessages = async (userId) =>
     });
 
 const markMessagesAsSeen = async (target, sender) =>
-    new Promise((resolve) => {
-        messages = messages.map((m) => {
-            if (m.target === target && m.sender === sender && !m.seenByTarget) {
-                m.seenByTarget = true;
-                return m;
+    new Promise(async (resolve) => {
+        const db = getMessagesDb()
+        await db.updateOne({
+            target: target,
+            sender: sender,
+            seenByTarget: false
+        }, {
+            $set: {
+                seenByTarget: true
             }
-            return m;
-        });
-        writeToDb(messagesDbAddress, messages);
+        })
+        // messages = messages.map((m) => {
+        //     if (m.target === target && m.sender === sender && !m.seenByTarget) {
+        //         m.seenByTarget = true;
+        //         return m;
+        //     }
+        //     return m;
+        // });
+        // writeToDb(messagesDbAddress, messages);
         resolve()
     });
 
 const getAllMessageTargets = async (userId) =>
-    new Promise((resolve) => {
+    new Promise(async (resolve) => {
+        const db = getMessagesDb();
+        const messages = await db.find({}).toArray()
         const targetIds = messages.filter(m => m.chatId.includes(userId))
             .map(m => userId === m.target ? m.sender : m.target)
             .filter((t, i, self) => i === self.findIndex(t1 => t1 === t))
         let targets = []
-        targetIds.forEach(id => {
-            let u = users.find(u => u.id === id)
-            if (u) {
-                targets.push(u)
+        const usersDb = getUsersDb()
+        for (let i = 0; i < targetIds.length; i++) {
+            const [user] = await usersDb.find({id: targetIds[i]}).toArray()
+            if (user) {
+                targets.push(user)
             }
-        })
+        }
+        // targetIds.forEach(async (id) => {
+        //     let u = users.find(u => u.id === id)
+        //     const users = await usersDb.find({id}).toArray()
+        //
+        //     if (u) {
+        //         targets.push(u)
+        //     }
+        // })
 
         targets = targets.map(t => ({id: t.id, nickname: t.nickname}))
         resolve(targets)

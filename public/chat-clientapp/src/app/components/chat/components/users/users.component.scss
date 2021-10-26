@@ -1,6 +1,7 @@
 :host {
   width: 100%;
 }
+
 .users {
   width: 100%;
   height: 100%;
@@ -9,6 +10,7 @@
   .list {
     display: flex;
     flex-direction: column;
+
     .user-item {
       width: 100%;
       display: flex;
@@ -19,35 +21,36 @@
       position: relative;
       padding: 5px;
 
+      .badge {
+        display: block;
+        position: absolute;
+        z-index: 999;
+        width: 8px;
+        height: 8px;
+        background-color: #F23E5C;
+        border-radius: 50100%;
+        right: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+      }
+
       &:hover {
         background-color: #303031;
       }
 
       &.active {
-        &:before {
-          content: "";
-          width: 10px;
-          height: 10px;
-          position: absolute;
-          top: 50%;
-          right: 20px;
-          transform: translateY(-50%);
-          background-color: green;
-          border-radius: 100%;
-        }
-      }
-
-      &.inactive {
-        &:before {
-          content: "";
-          width: 10px;
-          height: 10px;
-          position: absolute;
-          top: 50%;
-          right: 20px;
-          transform: translateY(-50%);
-          background-color: grey;
-          border-radius: 100%;
+        .avatar {
+          &:after {
+            content: "";
+            width: 8px;
+            height: 8px;
+            position: absolute;
+            top: 22px;
+            right: 0;
+            transform: translateY(-50%);
+            background-color: #46AB5E;
+            border-radius: 100%;
+          }
         }
       }
 
@@ -57,6 +60,7 @@
         display: flex;
         align-items: center;
         justify-content: center;
+
         &:before {
           content: '';
           display: block;
@@ -67,7 +71,6 @@
           left: 50%;
           transform: translate(-50%, -50%);
           border-radius: 100%;
-          background-color: red;
           z-index: 0;
         }
 
@@ -83,5 +86,41 @@
         padding-left: 5px;
       }
     }
+  }
+}
+
+.c1 {
+  &:before {
+    background-color: #3F51B5;
+  }
+}
+
+.c2 {
+  &:before {
+    background-color: #9971FC;
+  }
+}
+
+.c3 {
+  &:before {
+    background-color: #AF33B4;
+  }
+}
+
+.c4 {
+  &:before {
+    background-color: #07C4A0;
+  }
+}
+
+.c5 {
+  &:before {
+    background-color: #E93958;
+  }
+}
+
+.c6 {
+  &:before {
+    background-color: #4AB8D5;
   }
 }

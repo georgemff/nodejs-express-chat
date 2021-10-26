@@ -6,7 +6,15 @@ import {ApiService} from "../../services/api.service";
 import {Message, NewMessage} from "../../interfaces/interfaces";
 import {WebsocketService} from "./services/websocket.service";
 import {catchError} from "rxjs/operators";
-import {EMPTY} from "rxjs";
+import {EMPTY, Observable} from "rxjs";
+import {Target} from "@angular/compiler";
+
+interface TargetUsers {
+  id: string;
+  nickname: string;
+  active?: boolean,
+  newMessageFrom?: boolean
+}
 
 @Component({
   selector: "app-chat",
@@ -36,7 +44,7 @@ export class ChatComponent {
   private wsUsersSocket: WebSocketSubject<any>;
   private sockets: Array<WebSocketSubject<any>> = [];
 
-  public users: Array<{ id: string; nickname: string; active?: boolean }> = [];
+  public users: Array<TargetUsers> = [];
   public targetMessages: Message[] = [];
 
   public newMessage: string = "";
@@ -72,7 +80,6 @@ export class ChatComponent {
   }
 
   enter(event: KeyboardEvent, input: HTMLElement) {
-    console.log(event)
     if (event.key === "Enter" && !event.shiftKey) {
       event.preventDefault();
       this.sendMessage(input)
@@ -87,6 +94,7 @@ export class ChatComponent {
 
   logOut(): void {
     window.localStorage.removeItem('jwt');
+    this.closeConnection();
     this.router.navigate(['main'])
   }
 
@@ -133,13 +141,23 @@ export class ChatComponent {
       })
   }
 
+  private checkUnreadMessages(): Observable<{ seen: boolean, sender: string }[]> {
+    return this.apiService.hasUnreadMessages() as Observable<{ seen: boolean, sender: string }[]>;
+  }
+
   private markMessagesAsSeen() {
     this.apiService.markAsSeen(this._chatParticipants.target)
-      .pipe(catchError(err => {
-          console.error(err);
-          return EMPTY;
-        }
-      ))
+      .subscribe(() => {
+        this.users = this.users.map(el => {
+          if (el.id === this._chatParticipants.target) {
+            el.newMessageFrom = false
+          }
+          return el
+
+        })
+      }, error => {
+        console.error(error)
+      })
   }
 
   private getUsers() {
@@ -154,7 +172,26 @@ export class ChatComponent {
   private loadMessageTargets() {
     this.apiService.getTargets()
       .subscribe(r => {
-        this.users = r;
+        if (r.length > 0) {
+          this.users = r;
+          const u: TargetUsers[] = r
+          this.checkUnreadMessages()
+            .subscribe((um) => {
+              console.log('heheheh')
+              for(let i = 0; i < this.users.length; i++) {
+                let indexOfM = um.findIndex((el) => el.sender === this.users[i].id);
+                if (indexOfM >= 0) {
+                  this.users[i].newMessageFrom = true
+                } else {
+                  this.users[i].newMessageFrom = false
+                }
+              }
+            }, error => {
+              console.log(error)
+            })
+        }
+        this.openActiveUsersConnection()
+
       }, error => {
         console.error(error)
       })
@@ -174,7 +211,7 @@ export class ChatComponent {
       if (index === -1) {
         this.users.push({...el, active: true})
       } else {
-        this.users[index] = {...el, active: true}
+        this.users[index] = {...this.users[index], active: true}
       }
     })
 
@@ -182,23 +219,35 @@ export class ChatComponent {
 
   private webSocketInit(): void {
     this.openChatConnection()
-    this.openActiveUsersConnection();
+    // this.openActiveUsersConnection();
   }
 
   private openChatConnection() {
     this.wsChatSocket = this.websocketService.openChatConnection();
     this.wsChatSocket.subscribe(r => {
-      const target = r.sender === this._chatParticipants.sender ? r.target : r.sender;
+      const data = JSON.parse(r.data)
+      const target = data.sender === this._chatParticipants.sender ? data.target : data.sender;
       if (this._chatParticipants.target) {
-        this.targetMessages.push(JSON.parse(r.data));
+        this.targetMessages.push(data);
         setTimeout(() => {
           this.chatBody.nativeElement.scrollTop = this.chatBody.nativeElement.scrollHeight
         }, 0);
-        if (!r.seenByTarget && r.target === this.store.user.id) {
-          // markMessagesAsSeen();
+        if (!data.seenByTarget && data.target === this.store.user.id) {
+          this.markMessagesAsSeen();
         }
       } else {
-        // addRedCircleToElement(target);
+        this.users = this.users.map(el => {
+          if(el.id === target) {
+            el.newMessageFrom = true
+          }
+          return el
+        })
+
+        for(let i = 0; i < this.users.length; i++) {
+          if(this.users[i].id === target) {
+            this.users[i].newMessageFrom = true
+          }
+        }
       }
 
 

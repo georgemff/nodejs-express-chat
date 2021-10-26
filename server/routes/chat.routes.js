@@ -28,7 +28,9 @@ router.get("/has-unread-messages/", auth, async (req, res) => {
 router.put("/mark-messages-as-seen/:sender", auth, async (req, res) => {
     await chat
         .markMessagesAsSeen(req.user.id, req.params.sender)
-        .then(() => res.sendStatus(200))
+        .then(() => res.json({
+            status: 200
+        }))
         .catch((err) => {
             res.status(400).json({
                 message: err.message,
