@@ -1,6 +1,6 @@
 <div class="users">
   <div class="list">
-    <div class="user-item" *ngFor="let user of users" (click)="chooseTarget.emit(user.id)"
+    <div class="user-item" *ngFor="let user of users" (click)="chooseTarget.emit({id: user.id, nickname: user.nickname})"
          [ngClass]="{'active': user.active, 'inactive': !user.active}">
       <span class="badge" *ngIf="user.newMessageFrom"></span>
       <div class="avatar" [ngClass]="getRandomColorClass()">

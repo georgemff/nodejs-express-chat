@@ -1,0 +1,10 @@
+<div class="dropdown" #dropdown>
+  <div class="icon" (click)="toggle()">
+    <mat-icon>more_vert</mat-icon>
+  </div>
+  <div class="items" *ngIf="open" #items>
+    <div class="item">
+      <span>Delete Chat</span>
+    </div>
+  </div>
+</div>

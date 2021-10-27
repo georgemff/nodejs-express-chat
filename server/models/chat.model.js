@@ -1,9 +1,3 @@
-// const path = require("path");
-// const root = path.dirname(require.main.filename);
-// const messagesDbAddress = root + "/db/messages.json";
-// const usersDbAddress = root + "/db/users.json";
-// let messages = require(messagesDbAddress);
-// const users = require(usersDbAddress);
 const {getUsersDb, getMessagesDb} = require("../db/mongodb")
 
 const {
@@ -22,11 +16,11 @@ const getMessages = (target, sender) =>
                 {chatId: target + sender}
             ]
         }).toArray();
-        // if (Array.isArray(messages)) {
+        console.log(target, sender)
+        console.log(messages)
         resolve(
             messages
         );
-        // }
         reject({
             message: "Something Went Wrong!",
             status: 500,
@@ -45,23 +39,12 @@ const addMessage = (message, sender) =>
         };
         message = {...meta, ...message};
         await db.insertOne(message).catch(e => reject(e))
-        // messages.push(message);
-        // writeToDb(messagesDbAddress, messages);
         const connections = getChatConnection().filter(
             (c) => c.id === message.target || c.id === sender
         );
         connections.forEach((c) =>
             c.ws.send(
-                JSON.stringify(
-                    {...meta, ...message}
-                    // messages.filter((m) => {
-                    //     return (
-                    //         m.chatId === sender + message.target ||
-                    //         m.chatId === message.target + sender
-                    //     );
-                    // })
-                )
-            )
+                JSON.stringify({...meta, ...message}))
         );
         resolve({
             status: 200,
@@ -99,14 +82,6 @@ const markMessagesAsSeen = async (target, sender) =>
                 seenByTarget: true
             }
         })
-        // messages = messages.map((m) => {
-        //     if (m.target === target && m.sender === sender && !m.seenByTarget) {
-        //         m.seenByTarget = true;
-        //         return m;
-        //     }
-        //     return m;
-        // });
-        // writeToDb(messagesDbAddress, messages);
         resolve()
     });
 
@@ -125,15 +100,6 @@ const getAllMessageTargets = async (userId) =>
                 targets.push(user)
             }
         }
-        // targetIds.forEach(async (id) => {
-        //     let u = users.find(u => u.id === id)
-        //     const users = await usersDb.find({id}).toArray()
-        //
-        //     if (u) {
-        //         targets.push(u)
-        //     }
-        // })
-
         targets = targets.map(t => ({id: t.id, nickname: t.nickname}))
         resolve(targets)
     })

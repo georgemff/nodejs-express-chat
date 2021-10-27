@@ -4,6 +4,7 @@
   height: calc(100vh - 50px);
   margin: 0 auto;
 }
+
 .header {
   width: 100%;
   height: 50px;
@@ -14,6 +15,7 @@
     height: 100%;
     display: flex;
     justify-content: flex-start;
+
     button {
       color: #FFFFFF;
     }
@@ -24,11 +26,13 @@
     height: 100%;
     display: flex;
     justify-content: flex-end;
+
     button {
       color: #FFFFFF
     }
   }
 }
+
 .container {
   display: flex;
   width: 100%;
@@ -62,6 +66,33 @@
     height: calc(100% - 38px);
     overflow-y: auto;
     padding: 0 4px;
+    position: relative;
+
+    .chat-info {
+      width: 100%;
+      height: 38px;
+      position: sticky;
+      left: 0;
+      top: 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background-color: #18191A;
+
+      .chat-participant-name {
+        span {
+          color: #FFFFFF;
+        }
+      }
+
+      .more {
+        color: #FFFFFF;
+
+        mat-icon {
+          cursor: pointer;
+        }
+      }
+    }
 
     .blank-chat {
       width: 100%;
@@ -187,7 +218,7 @@
 }
 
 .relative {
-  position: relative!important;
+  position: relative !important;
 }
 
 .overlay {

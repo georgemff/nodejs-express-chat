@@ -18,6 +18,14 @@
     </div>
     <div class="chat">
       <div class="chat-body" #chatBody>
+        <div class="chat-info" *ngIf="_chatParticipants.target.id">
+          <div class="chat-participant-name">
+            <span>{{_chatParticipants.target.nickname.charAt(0).toUpperCase() + _chatParticipants.target.nickname.slice(1)}}</span>
+          </div>
+          <div class="more">
+            <app-dropdown-menu></app-dropdown-menu>
+          </div>
+        </div>
         <div *ngIf="!_chatParticipants.target" class="blank-chat">
           connect <br> with <br> people
         </div>

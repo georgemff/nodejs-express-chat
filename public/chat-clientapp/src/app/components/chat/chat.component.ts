@@ -36,7 +36,10 @@ export class ChatComponent {
   @ViewChild("chatBody") chatBody: ElementRef;
 
   public _chatParticipants: {
-    target: string;
+    target: {
+      id: string;
+      nickname: string;
+    }
     sender: string;
   }
 
@@ -62,7 +65,10 @@ export class ChatComponent {
       .subscribe(r => {
         this.store.user = r.user;
         this._chatParticipants = {
-          target: '',
+          target: {
+            id: "",
+            nickname: ""
+          },
           sender: this.store?.user?.id
         }
       })
@@ -99,16 +105,18 @@ export class ChatComponent {
   }
 
 
-  public chooseTarget(userId: string): void {
-    if (this._chatParticipants.target) {
-      if (this._chatParticipants.target === userId) {
+  public chooseTarget(target: {id: string, nickname: string}): void {
+    if (this._chatParticipants.target.id) {
+      if (this._chatParticipants.target.id === target.id) {
         this.targetMessages = [];
-        this._chatParticipants.target = "";
+        this._chatParticipants.target.id = "";
+        this._chatParticipants.target.nickname = "";
         return;
       }
     }
-    this._chatParticipants.target = userId;
-    this.apiService.getMessages(userId)
+    this._chatParticipants.target.id = target.id;
+    this._chatParticipants.target.nickname = target.nickname;
+    this.apiService.getMessages(target.id)
       .subscribe(r => {
         this.targetMessages = r;
         setTimeout(() => {
@@ -125,7 +133,7 @@ export class ChatComponent {
 
   public sendMessage(input: HTMLElement) {
     const body: NewMessage = {
-      target: this._chatParticipants.target,
+      target: this._chatParticipants.target.id,
       message: input.innerText
     }
 
@@ -146,10 +154,10 @@ export class ChatComponent {
   }
 
   private markMessagesAsSeen() {
-    this.apiService.markAsSeen(this._chatParticipants.target)
+    this.apiService.markAsSeen(this._chatParticipants.target.id)
       .subscribe(() => {
         this.users = this.users.map(el => {
-          if (el.id === this._chatParticipants.target) {
+          if (el.id === this._chatParticipants.target.id) {
             el.newMessageFrom = false
           }
           return el
@@ -177,7 +185,6 @@ export class ChatComponent {
           const u: TargetUsers[] = r
           this.checkUnreadMessages()
             .subscribe((um) => {
-              console.log('heheheh')
               for(let i = 0; i < this.users.length; i++) {
                 let indexOfM = um.findIndex((el) => el.sender === this.users[i].id);
                 if (indexOfM >= 0) {
@@ -227,7 +234,7 @@ export class ChatComponent {
     this.wsChatSocket.subscribe(r => {
       const data = JSON.parse(r.data)
       const target = data.sender === this._chatParticipants.sender ? data.target : data.sender;
-      if (this._chatParticipants.target) {
+      if (this._chatParticipants.target.id) {
         this.targetMessages.push(data);
         setTimeout(() => {
           this.chatBody.nativeElement.scrollTop = this.chatBody.nativeElement.scrollHeight

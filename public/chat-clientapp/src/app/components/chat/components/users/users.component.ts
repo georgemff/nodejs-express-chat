@@ -1,11 +1,6 @@
-import {
-  Component,
-  EventEmitter,
-  Input,
-  Output,
-} from "@angular/core";
+import {Component, EventEmitter, Input, OnChanges, Output, SimpleChanges,} from "@angular/core";
 
-type UserT = Array<{ id: string; nickname: string, active?: boolean, newMessageFrom?: boolean }>
+type UserT = Array<{ id: string; nickname: string, active?: boolean, newMessageFrom?: boolean, avatarColor?: string }>
 
 @Component({
   selector: 'app-users',
@@ -16,7 +11,7 @@ type UserT = Array<{ id: string; nickname: string, active?: boolean, newMessageF
 export class UsersComponent {
 
   @Input() users: UserT;
-  @Output() chooseTarget: EventEmitter<string> = new EventEmitter<string>();
+  @Output() chooseTarget: EventEmitter<{ id: string, nickname: string }> = new EventEmitter<{ id: string, nickname: string }>();
 
   colors: { key: string, value: string }[] = [
     {
@@ -43,9 +38,6 @@ export class UsersComponent {
       key: "c6",
       value: "#4AB8D5"
     }]
-
-  constructor() {
-  }
 
   getRandomInt(): number {
     return Math.floor(Math.random() * 6);

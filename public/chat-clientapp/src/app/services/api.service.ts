@@ -18,9 +18,9 @@ export class ApiService {
     return this.httpClient.post(url, body) as Observable<AuthAPIResponse>
   }
 
-  public hasUnreadMessages() {
+  public hasUnreadMessages(): Observable<{seen: boolean, sender: string}[]>  {
     const url = this.baseUrl + "has-unread-messages";
-    return this.httpClient.get(url);
+    return this.httpClient.get(url) as Observable<{seen: boolean, sender: string}[]> ;
   }
 
   public sendMessage(body: NewMessage): Observable<any> {
@@ -40,7 +40,7 @@ export class ApiService {
 
   public markAsSeen(sender: string) {
     const url = this.baseUrl + `mark-messages-as-seen/${sender}`;
-    return this.httpClient.get(url)
+    return this.httpClient.put(url, null)
   }
 
   public getTargets(): Observable<User[]> {

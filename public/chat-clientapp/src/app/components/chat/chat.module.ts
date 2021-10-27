@@ -7,10 +7,11 @@ import {MatButtonModule} from "@angular/material/button";
 import {MatIconModule} from "@angular/material/icon";
 import {WebsocketService} from "./services/websocket.service";
 import {FormsModule} from "@angular/forms";
+import {DropdownMenuModule} from "./components/dropdown-menu/dropdown-menu.module";
 
 @NgModule({
   declarations: [ChatComponent, UsersComponent],
-  imports: [ChatRoutingModule, CommonModule, MatButtonModule, MatIconModule, FormsModule],
+    imports: [ChatRoutingModule, CommonModule, MatButtonModule, MatIconModule, FormsModule, DropdownMenuModule],
   providers: [WebsocketService]
 })
 
