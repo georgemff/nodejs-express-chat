@@ -40,7 +40,7 @@ const addMessage = (message, sender) =>
         message = {...meta, ...message};
         await db.insertOne(message).catch(e => reject(e))
         const connections = getChatConnection().filter(
-            (c) => c.id === message.target || c.id === sender
+            (c) => c.ws.readyState === 1 && (c.id === message.target || c.id === sender)
         );
         connections.forEach((c) =>
             c.ws.send(

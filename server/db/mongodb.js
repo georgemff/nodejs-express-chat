@@ -2,7 +2,7 @@ const {MongoClient} = require("mongodb");
 const dotenv = require("dotenv");
 dotenv.config();
 
-const uri = `mongodb+srv://${process.env.MONGODB_USER}:${process.env.MONGODB_PASS}@achat.qeabg.mongodb.net/AChat?retryWrites=true&w=majority`;
+const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@achat.qeabg.mongodb.net/AChat?retryWrites=true&w=majority`;
 const client = new MongoClient(uri);
 
 //

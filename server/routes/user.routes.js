@@ -10,9 +10,11 @@ router.post("/login-or-register", async (req, res) => {
     await user
         .createUserOrLogin(req.body)
         .then((r) => {
+            console.log(req.body, 'wtf')
             res.json(r);
         })
         .catch((err) => {
+            console.log(req.body, 'wtf')
             res.status(err.status || 500).json({
                 message: err.message,
             });

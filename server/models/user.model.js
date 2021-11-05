@@ -119,7 +119,7 @@ const getUserById = (userId) => {
                 id: userId
             }).toArray();
             if (user) {
-                resolve(user)
+                resolve({id: user.id, nickname: user.nickname})
             }
             reject({
                 status: 400,
