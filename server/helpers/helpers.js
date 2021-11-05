@@ -24,7 +24,7 @@ const removeUsersConnection = (id) => {
         (ws) => ws.id !== id || ws.ws.readyState === 1
     );
 };
-const getUsersConnection = () => usersConnections;
+const getUsersConnection = () => usersConnections.filter((ws) => ws.ws.readyState === 1);
 
 module.exports = {
     writeToDb,
